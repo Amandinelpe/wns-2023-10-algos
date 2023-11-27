@@ -45,3 +45,51 @@ export interface DayMessages {
   day: string;
   messages: Message[];
 }
+
+export default function groupMessagesByDay({
+  messages,
+}: {
+  messages: Message[];
+}): DayMessages[] {
+  const daysMap: Record<string, DayMessages> = {};
+
+  messages.forEach((message: Message) => {
+    const sentAt = new Date(message.sentAt);
+    const dayKey = new Date(
+      Date.UTC(
+        sentAt.getUTCFullYear(),
+        sentAt.getUTCMonth(),
+        sentAt.getUTCDate(),
+        0,
+        0,
+        0
+      )
+    ).toISOString();
+
+    if (!daysMap[dayKey]) {
+      daysMap[dayKey] = {
+        day: dayKey,
+        messages: [],
+      };
+    }
+
+    if (daysMap[dayKey]) {
+      daysMap[dayKey].messages.push(message);
+    }
+  });
+
+  const result: DayMessages[] = Object.values(daysMap)
+    .sort(
+      (a: DayMessages, b: DayMessages) =>
+        new Date(a.day).getTime() - new Date(b.day).getTime()
+    )
+    .map((dayMessages: DayMessages) => {
+      dayMessages.messages.sort(
+        (a: Message, b: Message) =>
+          new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
+      );
+      return dayMessages;
+    });
+
+  return result;
+}

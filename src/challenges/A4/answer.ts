@@ -65,3 +65,37 @@ export interface MonthAds {
   month: string;
   ads: Ad[];
 }
+
+export default function groupAdsByMonth(submissions: Ad[]): MonthAds[] {
+  const groupedAds: { [key: string]: MonthAds } = {};
+
+  submissions.forEach((ad) => {
+    const createdAt = new Date(ad.createdAt);
+    const month = new Date(
+      Date.UTC(
+        createdAt.getUTCFullYear(),
+        createdAt.getUTCMonth(),
+        1,
+        0,
+        0,
+        0,
+        0
+      )
+    ).toISOString();
+
+    if (!groupedAds[month]) {
+      groupedAds[month] = {
+        month,
+        ads: [],
+      };
+    }
+
+    groupedAds[month].ads.push(ad);
+  });
+
+  const result = Object.values(groupedAds).sort(
+    (a, b) => new Date(a.month).getTime() - new Date(b.month).getTime()
+  );
+
+  return result;
+}
